@@ -2,6 +2,22 @@ version: '2'
 
 services:
 
+  https-portal:
+    image: steveltn/https-portal:1
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - 'nginx'
+    restart: always
+    environment:
+      DOMAINS: '${MOODLE_DOMAIN} -> http://nginx:8082'
+      STAGE: 'local'
+      # STAGE: 'production'
+      # FORCE_RENEW: 'true'
+    networks:
+      - app-tier
+
   nginx:
    image: nginx:alpine
    ports:
