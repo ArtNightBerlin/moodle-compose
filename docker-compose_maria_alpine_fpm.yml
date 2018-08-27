@@ -24,10 +24,10 @@ services:
       MYSQL_PASSWORD: '${MOODLE_DB_PASSWORD}'
 
   moodle:
-    image: ellakcy/moodle:mysql_maria_fpm_alpine
+    image: artnight/moodle:mysql_maria_fpm_alpine
     volumes:
-      - './data/moodle:/var/moodledata'
-      - './data/www:/var/www/html'
+      - '${MOODLE_DATA}:/var/moodledata'
+      - '${MOODLE_ROOT}:/var/www/html'
     links:
       - 'moodle_db'
     environment:
