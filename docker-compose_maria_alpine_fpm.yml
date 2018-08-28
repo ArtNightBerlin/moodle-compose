@@ -1,5 +1,9 @@
 version: '2'
 
+networks:
+  app-tier:
+    driver: bridge
+
 services:
 
   https-portal:
@@ -12,40 +16,62 @@ services:
     restart: always
     environment:
       DOMAINS: '${MOODLE_DOMAIN} -> http://nginx:8082'
-      STAGE: 'local'
+      STAGE: '${MOODLE_DOMAIN_STAGE}'
       # STAGE: 'production'
       # FORCE_RENEW: 'true'
     networks:
       - app-tier
 
   nginx:
-   image: nginx:alpine
-   ports:
-     - '8082:8082'
-   volumes:
-     - './conf/nginx.conf:/etc/nginx/nginx.conf:ro'
-     - './logs/:/var/log/nginx'
-   links:
-     - 'moodle'
-   volumes_from:
-     - 'moodle'
+    image: nginx:alpine
+    ports:
+      - '8082:8082'
+    volumes:
+      - './conf/nginx.conf:/etc/nginx/nginx.conf:ro'
+      - './logs/:/var/log/nginx'
+    links:
+      - 'moodle'
+    volumes_from:
+      - 'moodle'
+    networks:
+      - app-tier
 
   moodle_db:
     image: mariadb:10.2
+    ports:
+      - '3306:3306'
+    volumes:
+      - '${MOODLE_DATAROOT}/mariadb_data:/var/lib/mysql'
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
       MYSQL_ONETIME_PASSWORD: 'yes'
       MYSQL_DATABASE: '${MOODLE_DB_NAME}'
       MYSQL_USER: '${MOODLE_DB_USER}'
       MYSQL_PASSWORD: '${MOODLE_DB_PASSWORD}'
+    networks:
+      - app-tier
+
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - '${MOODLE_DATAROOT}/redis_data:/bitnami'
+    networks:
+      - app-tier
 
   moodle:
     image: artnight/moodle:mysql_maria_fpm_alpine
     volumes:
-      - '${MOODLE_DATA}:/var/moodledata'
-      - '${MOODLE_ROOT}:/var/www/html'
+      - '${MOODLE_DATAROOT}/moodle_data:/var/moodledata'
+      - '${MOODLE_DATAROOT}/moodle_html:/var/www/html'
+    ports:
+      - '8082:80'
     links:
       - 'moodle_db'
+      - 'redis'
     environment:
       MOODLE_URL: $MOODLE_URL
       MOODLE_ADMIN: $MOODLE_ADMIN
@@ -60,3 +86,7 @@ services:
       MOODLE_SSL: $MOODLE_SSL
       MOODLE_EMAIL_TYPE_QMAIL: $MOODLE_EMAIL_TYPE_QMAIL
       MOODLE_EMAIL_HOST: $MOODLE_EMAIL_HOST
+      MOODLE_REDIS_HOST: $MOODLE_REDIS_HOST
+      MOODLE_REDIS_PORT: $MOODLE_REDIS_PORT
+    networks:
+      - app-tier

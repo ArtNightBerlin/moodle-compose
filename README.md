@@ -1,12 +1,12 @@
-# Deployment recipe for ellakcy's docker moodle images
+# Deployment recipe for ArtNight's Docker Moodle images
 
-A recipe/boilerplate in order to get the images from community's [moodle](https://github.com/ellakcy/docker-moodle) repo up and running.
+A recipe that builds [moodle](https://github.com/artnight/docker-moodle), expanded with Redis caching support - based on [ellakcy/moodle-compose](https://github.com/ellakcy/moodle-compose).
 
 ## Installation
 Run the following commands:
 
 ```bash
-git clone git@github.com:ellakcy/moodle-compose.git
+git clone git@github.com:artnight/moodle-compose.git
 ln -s ^correct_moodle_compose.yml^ docker-compose.yml
 ```
 
@@ -105,7 +105,7 @@ server {
 
 ```
 
-Please replace the values that are between `^` with apropriate ones. For ssl certificate we recomend the letencrpypt's certbot. Also the reverse proxy should **NEVER** forward the `Host` http header. For more info you can consult the [nginx configuration](https://raw.githubusercontent.com/ellakcy/docker-moodle/master/conf/nginx/nginx_ssl_reverse.conf) delivered by us.
+Please replace the values that are between `^` with apropriate ones. SSL certificates are managed by letsencrypt's certbot under the [HTTPS Portal docker image](https://hub.docker.com/r/steveltn/https-portal), serving as a proxy. Also the reverse proxy should **NEVER** forward the `Host` http header. For more info you can consult the [nginx configuration](https://raw.githubusercontent.com/artnight/docker-moodle/master/conf/nginx/nginx_ssl_reverse.conf) delivered by us.
 
 ## Migrations from fpm to apache
 
@@ -117,7 +117,7 @@ You can easily migrate from fpm ones into apache ones, but theese concers should
 
 ## I made my own image how can I play with?
 
-Is reccomended to link the appropriate yml file and replace the `image` at `moodle` section with your own. For example let suppose we a `foo/moodle` image based on `ellakcy/moodle:mysql_maria_apache` then we will run the following commands:
+Is reccomended to link the appropriate yml file and replace the `image` at `moodle` section with your own. For example let suppose we a `foo/moodle` image based on `artnight/moodle:mysql_maria_apache` then we will run the following commands:
 
 ```bash
 ln -s docker-compose_mysql_apache.yml docker-compose.yml
